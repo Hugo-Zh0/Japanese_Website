@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日本語 Spelling Box Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+    <div class="app-head" id="appHead">
+        <h1>
+            <svg class="icon icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#fff" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="#d63031" stroke="none"/></svg>
+            Spelling Box Generator
+        </h1>
+        <p>Build your own dictionary · Generate spelling worksheets</p>
+    </div>
+
+    <div class="tabs" id="appTabs">
+        <button class="tab active" onclick="switchTab('dict')">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> Dictionary
+        </button>
+        <button class="tab" onclick="switchTab('gen')">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Generator
+        </button>
+    </div>
+
+    <div class="panel active" id="panelDict">
+        <div class="add-form" id="appForm">
+            <div class="add-grid">
+                <div class="full">
+                    <label>English <span style="font-weight:400;text-transform:none">(use parentheses for context)</span></label>
+                    <input type="text" id="addEng" placeholder="e.g. watch (noun)" onkeydown="if(event.key==='Enter')saveWordEntry()">
+                </div>
+                <div>
+                    <label>Hiragana <span style="font-weight:400;text-transform:none">(use / for multiple)</span></label>
+                    <input type="text" id="addHira" class="jp-input" placeholder="せんせい / きょうし" onkeydown="if(event.key==='Enter')saveWordEntry()">
+                </div>
+                <div>
+                    <label>Katakana <span style="font-weight:400;text-transform:none">(use / for multiple)</span></label>
+                    <input type="text" id="addKata" class="jp-input" placeholder="センセイ / キョウシ" onkeydown="if(event.key==='Enter')saveWordEntry()">
+                </div>
+                <div class="full">
+                    <label>Kanji <span style="font-weight:400;text-transform:none">(use / for multiple)</span></label>
+                    <input type="text" id="addKanji" class="jp-input" placeholder="先生 / 教師" onkeydown="if(event.key==='Enter')saveWordEntry()">
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-green btn-sm" id="btnAdd" onclick="saveWordEntry()">
+                    <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Add Word
+                </button>
+                <button class="btn btn-blue btn-sm" id="btnSaveEdit" onclick="saveWordEntry()" style="display:none;">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Save Changes
+                </button>
+                <button class="btn btn-ghost btn-sm" id="btnCancelEdit" onclick="cancelEdit()" style="display:none;">
+                    Cancel
+                </button>
+                
+                <span id="addMsg" style="font-size:12px;color:var(--green);display:none;align-items:center;gap:4px">
+                    <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> <span id="addMsgText">Added!</span>
+                </span>
+                <span id="errMsg" style="font-size:12px;color:var(--red);display:none;align-items:center;gap:4px">
+                    <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> <span id="errMsgText">Word already exists!</span>
+                </span>
+            </div>
+        </div>
+
+        <div class="dict-bar" id="appBar">
+            <span>
+                <svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                <strong id="dictCount">0</strong> words
+            </span>
+            <div class="spacer"></div>
+            <div class="search-wrap">
+                <svg class="icon search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" class="dict-search" id="dictSearch" placeholder="Search…" oninput="renderDictList(true)">
+            </div>
+            <button class="btn-xs" onclick="downloadTemplate()" title="Download CSV Template to edit in Excel">Template</button>
+            <button class="btn-xs" onclick="exportDict()">Export</button>
+            <button class="btn-xs" onclick="document.getElementById('importFile').click()">Import</button>
+            <button class="btn-xs" style="color:var(--red)" onclick="clearDict()">Clear All</button>
+            <input type="file" id="importFile" accept=".csv, .json" style="display:none" onchange="handleImport(event)">
+        </div>
+
+        <div id="dictList"></div>
+    </div>
+
+    <div class="panel" id="panelGen">
+        
+        <div class="section gen-layout">
+            <div class="gen-text-area">
+                <div class="label">Words (one per line)</div>
+                <textarea id="words" oninput="renderWordBank()" placeholder="watch (noun)&#10;watch (verb)&#10;teacher&#10;blue">watch (noun)
+watch (verb)
+teacher
+blue</textarea>
+            </div>
+            <div class="gen-word-bank">
+                <div class="label">Quick Add <span style="font-weight:400;text-transform:none">(Word Bank)</span></div>
+                <input type="text" id="bankSearch" placeholder="Search dictionary..." oninput="renderWordBank()">
+                <div class="bank-list" id="bankList"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="row">
+                <div>
+                    <div class="label">Mode</div>
+                    <select id="mode">
+                        <option value="hiragana">Hiragana (ひらがな)</option>
+                        <option value="katakana">Katakana (カタカナ)</option>
+                        <option value="kanji">Kanji (漢字)</option>
+                        <option value="both">Kanji + Hiragana hint</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="label">Repeat</div>
+                    <div class="num-input">
+                        <button class="num-btn" onclick="adj(-1)">−</button>
+                        <input type="number" id="repeat" value="1" min="1">
+                        <button class="num-btn" onclick="adj(1)">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="toggles">
+                <label class="toggle"><input type="checkbox" id="autofill" checked><span class="toggle-track"></span>Auto-fill page</label>
+                <label class="toggle"><input type="checkbox" id="shuffle"><span class="toggle-track"></span>Shuffle</label>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-red" onclick="generate()">
+                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Generate
+            </button>
+            <button class="btn btn-dark" onclick="window.print()">
+                <svg class="icon" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> Print
+            </button>
+            <button class="btn btn-ghost" onclick="clearOverrides()">
+                <svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Clear box fixes
+            </button>
+        </div>
+
+        <div id="missingAlert"></div>
+    </div>
+</div>
+
+<div class="page-wrap" id="pageWrap">
+    <div class="a4" id="page"><div id="ws"></div></div>
+</div>
+
+<script src="main.js"></script>
+<script src="data.js"></script>
+<script src="dictionary.js"></script>
+<script src="generator.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
