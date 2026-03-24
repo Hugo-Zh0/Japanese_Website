@@ -870,3 +870,41 @@ textarea {
         flex-direction: column;
     }
 }
+
+/* Footer */
+.app-footer {
+    text-align: center;
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1.5px dashed var(--border);
+    font-size: 13px;
+    color: var(--ink3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.app-footer a {
+    color: var(--ink2);
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: color .12s;
+}
+
+.app-footer a:hover {
+    color: var(--ink);
+}
+
+.app-footer a svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Make sure the footer hides when printing */
+@media print {
+    .app-footer { display: none !important; }
+}
