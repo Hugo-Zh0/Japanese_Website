@@ -19,6 +19,23 @@ function switchTab(id) {
     }
 }
 
+// Print fix: force the worksheet visible before printing, restore after
+window.addEventListener('beforeprint', () => {
+    const pw = document.getElementById('pageWrap');
+    if (hasGenerated && pw) {
+        pw.dataset.preprint = pw.style.display; // save current state
+        pw.style.display = 'flex';
+    }
+});
+
+window.addEventListener('afterprint', () => {
+    const pw = document.getElementById('pageWrap');
+    if (pw && pw.dataset.preprint !== undefined) {
+        pw.style.display = pw.dataset.preprint;
+        delete pw.dataset.preprint;
+    }
+});
+
 // Re-render dictionary list if the window is resized to keep pagination clean
 let resizeTimer;
 window.addEventListener('resize', () => {
