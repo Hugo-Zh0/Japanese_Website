@@ -908,3 +908,44 @@ textarea {
 @media print {
     .app-footer { display: none !important; }
 }
+
+/* Word Bank Bulk Actions (Add All / Remove All) */
+.bank-bulk-actions {
+    display: flex;
+    gap: 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2px;
+}
+
+.bank-bulk-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 5px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 4px;
+    background: #eee;
+    border: none;
+    cursor: pointer;
+    color: var(--ink2);
+    transition: all .12s;
+}
+
+.bank-bulk-btn:hover:not(:disabled) {
+    background: #ddd;
+    color: var(--ink);
+}
+
+.bank-bulk-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.bank-bulk-btn svg {
+    width: 11px;
+    height: 11px;
+}
