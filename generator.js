@@ -22,8 +22,21 @@ function renderWordBank() {
         el.innerHTML = `<div style="padding:10px;text-align:center;color:var(--ink3);font-size:12px">No words found.</div>`;
         return;
     }
+
+    // Count how many of the filtered words are already added
+    const addedCount = filtered.filter(k => currentWords.includes(k.toLowerCase())).length;
+    const allAdded = addedCount === filtered.length;
+    const noneAdded = addedCount === 0;
+
+    let html = `<div class="bank-bulk-actions">
+        <button class="btn-xs bank-bulk-btn" onclick="bankAddAll()" ${allAdded ? 'disabled' : ''}>
+            <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> Add All${search ? ' Filtered' : ''}
+        </button>
+        <button class="btn-xs bank-bulk-btn" onclick="bankRemoveAll()" style="color:var(--red)" ${noneAdded ? 'disabled' : ''}>
+            <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Remove All${search ? ' Filtered' : ''}
+        </button>
+    </div>`;
     
-    let html = '';
     for (const k of filtered) {
         const isInList = currentWords.includes(k.toLowerCase());
         
@@ -45,6 +58,57 @@ function renderWordBank() {
         }
     }
     el.innerHTML = html;
+}
+
+function bankAddAll() {
+    const d = getDict();
+    const keys = Object.keys(d).sort();
+    const search = (document.getElementById('bankSearch').value || '').toLowerCase();
+    
+    const filtered = search ? keys.filter(k => 
+        k.includes(search) || 
+        (d[k].h || '').includes(search) || 
+        (d[k].kt || '').includes(search) || 
+        (d[k].k || '').includes(search)
+    ) : keys;
+    
+    const ta = document.getElementById('words');
+    const currentWords = ta.value.split('\n').map(w => w.trim().toLowerCase()).filter(w => w);
+    
+    // Add only words not already in the list
+    const toAdd = filtered.filter(k => !currentWords.includes(k.toLowerCase()));
+    
+    if (toAdd.length) {
+        let val = ta.value.trimEnd();
+        if (val && !val.endsWith('\n')) val += '\n';
+        val += toAdd.join('\n') + '\n';
+        ta.value = val;
+    }
+    
+    renderWordBank();
+}
+
+function bankRemoveAll() {
+    const d = getDict();
+    const keys = Object.keys(d).sort();
+    const search = (document.getElementById('bankSearch').value || '').toLowerCase();
+    
+    const filtered = search ? keys.filter(k => 
+        k.includes(search) || 
+        (d[k].h || '').includes(search) || 
+        (d[k].kt || '').includes(search) || 
+        (d[k].k || '').includes(search)
+    ) : keys;
+    
+    const filteredSet = new Set(filtered.map(k => k.toLowerCase()));
+    
+    const ta = document.getElementById('words');
+    let lines = ta.value.split('\n');
+    lines = lines.filter(l => !filteredSet.has(l.trim().toLowerCase()));
+    ta.value = lines.join('\n').replace(/\n{2,}/g, '\n').trim();
+    if (ta.value) ta.value += '\n';
+    
+    renderWordBank();
 }
 
 function bankAddWord(word) {
@@ -283,9 +347,8 @@ function generate() {
             const fill = doShuffle ? shuffleArr([...lines]) : [...lines];
             
             let idx = 0;
-            let failedAttempts = 0; // Tracks consecutive failures
+            let failedAttempts = 0;
             
-            // Loop stops if we hit 500 items, OR if we've tried every word in the list and none fit the gap
             while (idx < 500 && failedAttempts < fill.length) {
                 const el = createWordEl(fill[idx % fill.length]);
                 if (!el) { 
@@ -295,12 +358,10 @@ function generate() {
                 
                 ws.appendChild(el);
                 
-                // If it pushes the page over the A4 limit, remove it and count as a failure
                 if (page.scrollHeight > threshold) { 
                     el.remove(); 
                     failedAttempts++; 
                 } else {
-                    // If it successfully fits, reset the failure counter
                     failedAttempts = 0; 
                 }
                 idx++;
